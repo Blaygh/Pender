@@ -1,11 +1,82 @@
 //server
-
+#include "defaults.h"
 #include <winsock2.h>
 #include <ws2tcpip.h> 
 #include <stdio.h>
+#include <cstring>
+#include <condition_variable>
+#include <mutex>
+#include <thread>
+#include <map>
+            
 
-#define DEFAULT_PORT "27015"
-#define BUFF_LEN 512
+
+std::mutex mtx;
+std::condition_variable cv;
+
+
+int echo( SOCKET* clientSock, const char* recvBuff, int len){
+
+    std::lock_guard<std::mutex> guard(mtx);
+    
+    if (send(*clientSock, recvBuff, len, 0) == SOCKET_ERROR){
+        printf("echo fail %d", WSAGetLastError());
+        closesocket(*clientSock);
+    return 1;
+    }
+
+    return 0;
+}
+
+/// @brief extract the 10 char ID from recv buff
+/// @param recvbuff the the buffer sent from client 
+/// @return the first 10 elements from recvbuff
+char* getID(char* recvbuff, bool senderId = true){
+    char *sockID = new char[SOCK_ID_LEN];
+
+    if (senderId){
+        int i = 0;
+        for (int i; i< SOCK_ID_LEN; i++){
+            sockID[i] = recvbuff[i];
+        }
+        return sockID;
+    }
+    else{
+        int i = 0;
+        for (int i; i< SOCK_ID_LEN; i++){
+            sockID[i] = recvbuff[i+SOCK_ID_LEN];
+        }
+
+        return sockID;
+    }
+}
+
+/// @brief creates client socket and recieves data and echos recived message 
+void handleClient(SOCKET* clientSock, char *recvbuf){
+    int iResult;
+
+    std::lock_guard<std::mutex> guard(mtx);
+
+    do{
+        iResult =  recv(*clientSock,recvbuf,(int) BUFF_LEN, 0);
+        if (iResult > 0){
+            //echo
+            echo(clientSock, (char *) MSG_SENT,3);
+        
+        }else if(iResult == 0){
+            printf("Connection closing ...");
+        }else{
+
+            printf("Recv failed", WSAGetLastError());
+            closesocket(*clientSock);
+        }
+
+
+    }while( iResult>0);
+    closesocket(*clientSock);
+
+}
+
 
 
 int main(){
@@ -63,88 +134,9 @@ int main(){
         return 1;
     }
 
-    SOCKET ClientSocket1;
-    SOCKET ClientSocket2;
 
-    ClientSocket1 = INVALID_SOCKET;
-    ClientSocket2 = INVALID_SOCKET;
-
-// Accept a client socket
-ClientSocket1 = accept(listenSock, NULL, NULL);
-if (ClientSocket1 == INVALID_SOCKET) {
-    printf("accept failed: %d\n", WSAGetLastError());
-    closesocket(listenSock);
-    WSACleanup();
-    return 1;
-}
-
-ClientSocket2 = accept(listenSock, NULL, NULL);
-if (ClientSocket1 == INVALID_SOCKET) {
-    printf("accept failed: %d\n", WSAGetLastError());
-    closesocket(listenSock);
-    WSACleanup();
-    return 1;
-}
-
-
-    char recvbuff[BUFF_LEN]={};
-    int iResult1,iResult2, iSendResult;
-
-
-    do{
-        iResult1 = recv(ClientSocket1, recvbuff, (int)BUFF_LEN,0);
-        if (iResult1>0){
-            printf("Bytes received: %d\nClient sent: %s\n", iResult1, recvbuff);
-
-            //echo
-            iSendResult = send(ClientSocket2,recvbuff, iResult1,0);
-            if (iSendResult == 0){
-                printf("Echo failed %d\n", WSAGetLastError());
-                closesocket(ClientSocket2);
-                closesocket(ClientSocket1);
-                WSACleanup();
-            }
-            printf("echo sent to client2\n");
-
-
-            iResult2 = recv(ClientSocket2, recvbuff, (int)BUFF_LEN,0);
-            if (iResult2>0){
-                printf("Bytes received: %d\nClient sent: %s\n", iResult1, recvbuff);
-
-                //echo
-                iSendResult = send(ClientSocket1,recvbuff, iResult1,0);
-                if (iSendResult == 0){
-                    printf("Echo failed %d\n", WSAGetLastError());
-                    closesocket(ClientSocket1);
-                    WSACleanup();
-                }
-                printf("echo sent to client 1");
-
-
-        }else if(iResult1 == 0){
-            printf("\nClosing Connection\n");
-        }else {
-        printf("recv failed: %d\n ", WSAGetLastError());
-        closesocket(ClientSocket1);
-        closesocket(ClientSocket2);
-        WSACleanup();
-        return 1;
-        }
-    }
-    } while(iResult1>0);
-
-    //shutdown Send side of socket 
-
-    iResult1 = shutdown(ClientSocket1,SD_SEND);
-    if (iResult1 == SOCKET_ERROR){
-        printf("Shutdown Error:%d ", WSAGetLastError());
-        closesocket(ClientSocket1);
-        WSACleanup();
-    }
-
-    closesocket(ClientSocket1);
-    closesocket(ClientSocket2);
     WSACleanup();
 
     return 0;
 }
+

@@ -3,10 +3,9 @@
 #include <stdio.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include "defaults.h"
+#include <thread>
 
-
-#define DEFAULT_PORT "27015"
-#define BUFF_LEN 512
 
 
 
