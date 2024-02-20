@@ -96,4 +96,7 @@ int main(){
 
 
     //cleanup
+    closesocket(connectSock);
+    WSACleanup();
+
 }

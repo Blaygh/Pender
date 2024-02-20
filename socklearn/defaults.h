@@ -7,6 +7,7 @@
 
 
 #define MSG_SENT 500 //Message sent status code 
+#define MSG_SENT_LEN 3L
 #define MSG_DELVD 1000//Message delivered status code
 
 //@brief representing phone number of client in buff 

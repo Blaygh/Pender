@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
     hints.ai_protocol = IPPROTO_TCP;
 
     if(getaddrinfo(argv[1],DEFAULT_PORT,&hints,&result) != 0){
-        printf("getaddrinfo failed%d\n");
+        printf("\ngetaddrinfo failed%d");
         WSACleanup();
         return 1;
     }
@@ -41,14 +41,14 @@ int main(int argc, char *argv[]){
     connectSocket = socket(result->ai_family,result->ai_socktype,result->ai_protocol);
 
     if(connectSocket == INVALID_SOCKET){
-        printf("socket creation failed%d\n", WSAGetLastError());
+        printf("\nsocket creation failed%d\n", WSAGetLastError());
         freeaddrinfo(result);
         WSACleanup();
         return 1;
     }
 
     if (connect(connectSocket,ptr->ai_addr,(int)ptr->ai_addrlen) == SOCKET_ERROR){
-        printf("Connection failed%d\n", WSAGetLastError());
+        printf("\nConnection failed%d", WSAGetLastError());
 
         //LOOK INTO TRYING NEXT ADDRESS RETURNED BY getaddrinfo 
         //instead of freeing the resources
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
 
 
     if (connectSocket == INVALID_SOCKET) {
-        printf("Unable to connect to server!%d\n");
+        printf("\nUnable to connect to server!%d");
         WSACleanup();
         return 1;
 }
@@ -73,20 +73,27 @@ int main(int argc, char *argv[]){
     int sendRes = send(connectSocket,sendbuf,(int)strlen(sendbuf) + 1,0);
 
     if (sendRes == SOCKET_ERROR){
-        printf("send fail",WSAGetLastError());
+        printf("\nsend fail",WSAGetLastError());
         closesocket(connectSocket);
     }
 
     printf("\nNumber of bytes sent: %d",sendRes);
 
-    int echo_data = recv(connectSocket, recvbuff, sendRes,0);
-    if (echo_data == SOCKET_ERROR){
-        printf(" echo recieve fail %d\n", WSAGetLastError());
-        closesocket(connectSocket);
-        WSACleanup();
-    }
-    printf("\nEcho: %s", recvbuff);
+    char recvbuf[BUFF_LEN];
+    int iResult;
 
+do {
+    iResult = recv(connectSocket, recvbuf, BUFF_LEN, 0);
+    if (iResult > 0) {
+        printf("\nReceived echo: %s", recvbuf);
+    } else if (iResult == 0) {
+        printf("\nConnection closed");
+    } else {
+        printf("\nrecv failed: %d", WSAGetLastError());
+    }
+} while (iResult > 0);
+
+    printf("\nEcho: message sent %s", recvbuff);
 
     closesocket(connectSocket);
     WSACleanup();

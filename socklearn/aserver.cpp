@@ -8,6 +8,7 @@
 #include <mutex>
 #include <thread>
 #include <map>
+#include <vector>
             
 
 
@@ -17,13 +18,13 @@ std::condition_variable cv;
 
 int echo( SOCKET* clientSock, const char* recvBuff, int len){
 
-    std::lock_guard<std::mutex> guard(mtx);
-    
     if (send(*clientSock, recvBuff, len, 0) == SOCKET_ERROR){
         printf("echo fail %d", WSAGetLastError());
         closesocket(*clientSock);
     return 1;
     }
+
+    printf("\necho sent");
 
     return 0;
 }
@@ -35,15 +36,13 @@ char* getID(char* recvbuff, bool senderId = true){
     char *sockID = new char[SOCK_ID_LEN];
 
     if (senderId){
-        int i = 0;
-        for (int i; i< SOCK_ID_LEN; i++){
+        for (int i=0; i< SOCK_ID_LEN; i++){
             sockID[i] = recvbuff[i];
         }
         return sockID;
     }
     else{
-        int i = 0;
-        for (int i; i< SOCK_ID_LEN; i++){
+        for (int i=0; i< SOCK_ID_LEN; i++){
             sockID[i] = recvbuff[i+SOCK_ID_LEN];
         }
 
@@ -60,15 +59,19 @@ void handleClient(SOCKET* clientSock, char *recvbuf){
     do{
         iResult =  recv(*clientSock,recvbuf,(int) BUFF_LEN, 0);
         if (iResult > 0){
+            printf("\nhandling client");
             //echo
-            echo(clientSock, (char *) MSG_SENT,3);
+            // echo(clientSock, (char *) MSG_SENT,MSG_SENT_LEN);
+            echo(clientSock, recvbuf,iResult);
+            printf("echo finished?");
         
         }else if(iResult == 0){
             printf("Connection closing ...");
         }else{
-
-            printf("Recv failed", WSAGetLastError());
+            printf("Recv failed %d", WSAGetLastError());
             closesocket(*clientSock);
+            delete clientSock;
+            delete[] recvbuf;
         }
 
 
@@ -134,8 +137,38 @@ int main(){
         return 1;
     }
 
+    //for client addressing  using 10 digit"phone numbers"
+    std::vector <std::map<int, SOCKET>> client_addr;
 
+    while(true){
+    char* recvbuff = new char[BUFF_LEN]{};
+    SOCKET* clientSock = new SOCKET;
+    *clientSock = accept(listenSock,NULL,NULL);
+
+    if (*clientSock != INVALID_SOCKET){
+
+        printf("socket accepted");
+        char* sockId = new char[SOCK_ID_LEN];
+
+        std::thread cltHandth(handleClient, clientSock, recvbuff);
+        cltHandth.detach();
+
+        // const char *iD = getID(recvbuff);
+        // strncpy(sockId, iD, SOCK_ID_LEN);
+        // delete[] iD;
+        //client_addr[sockId] = *clientSock; //client addressing
+
+        delete[] sockId; 
+
+    }else {
+    printf("Accept failed: %d", WSAGetLastError());
+    }
+
+
+}
+    closesocket(listenSock);
     WSACleanup();
+
 
     return 0;
 }
