@@ -86,6 +86,7 @@ do {
     iResult = recv(connectSocket, recvbuf, BUFF_LEN, 0);
     if (iResult > 0) {
         printf("\nReceived echo: %s", recvbuf);
+
     } else if (iResult == 0) {
         printf("\nConnection closed");
     } else {
@@ -93,8 +94,7 @@ do {
     }
 } while (iResult > 0);
 
-    printf("\nEcho: message sent %s", recvbuff);
-
+ 
     closesocket(connectSocket);
     WSACleanup();
     return 0;
