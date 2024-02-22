@@ -149,7 +149,7 @@ int main(){
 
     if (*clientSock != INVALID_SOCKET){
 
-        printf("socket accepted");
+        printf("\nsocket accepted");
         char* sockId = new char[SOCK_ID_LEN];
 
         std::thread cltHandth(handleClient, clientSock, recvbuff);

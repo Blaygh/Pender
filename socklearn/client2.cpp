@@ -80,47 +80,6 @@ do {
     }
 } while (iResult > 0);
 
-
-
-    //recieve
-    // int iSendbytes = recv(connectSock, recvBuff, (int)strlen(sendBuff),0);
-
-    // if (iSendbytes == SOCKET_ERROR){
-    //     printf("send fail",WSAGetLastError());
-    //     closesocket(connectSock);
-    // }
-    // printf("%s", recvBuff);
-
-    // //send 
-    // iSendbytes = send(connectSock, sendBuff, (int)strlen(sendBuff)+1,0);
-
-    // if (iSendbytes == SOCKET_ERROR){
-    //     printf("send fail %d",WSAGetLastError());
-    //     closesocket(connectSock); 
-    // }
-
-    //     iSendbytes = shutdown(connectSock, SD_SEND);
-    // if (iSendbytes == SOCKET_ERROR) {
-    //     printf("shutdown failed: %d\n", WSAGetLastError());
-    //     closesocket(connectSock);
-    //     WSACleanup();
-    //     return 1;
-    // }
-
-        // Receive until the peer closes the connection
-    // do {
-
-    //     iSendbytes = recv(connectSock, recvBuff, (int)BUFF_LEN, 0);
-    //     if ( iSendbytes > 0 )
-    //         printf("Bytes received: %d\n", iSendbytes);
-    //     else if ( iSendbytes == 0 )
-    //         printf("Connection closed\n");
-    //     else
-    //         printf("recv failed: %d\n", WSAGetLastError());
-
-    // } while( iSendbytes > 0 );
-
-
     //cleanup
     closesocket(connectSock);
     WSACleanup();
