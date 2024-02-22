@@ -103,7 +103,8 @@ int main(){
 
     //sending buffer
     const char *sendbuf = "hello from the other side, -Client1 :)\0";
-    char recvbuff[BUFF_LEN] = {};
+    char recvbuf[BUFF_LEN]={};
+    int iResult;
 
     int sendRes = send(connectSocket,sendbuf,(int)strlen(sendbuf) + 1,0);
 
@@ -113,9 +114,6 @@ int main(){
     }
 
     printf("\nNumber of bytes sent: %d",sendRes);
-
-    char recvbuf[BUFF_LEN]={};
-    int iResult;
 
 do {
     iResult = recv(connectSocket, recvbuf, BUFF_LEN, 0);
