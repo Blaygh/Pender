@@ -6,10 +6,45 @@
 #include "defaults.h"
 #include <thread>
 
+//creat recv function for incoming msgs
+
+int recv_echo_msg( SOCKET* clientSock, char* recvBuff, int len){
+
+    struct timeval tv;
+    tv.tv_sec = TIMEOUT_IN_SECONDS;  // TIMEOUT_IN_SECONDS is the timeout you want in seconds
+    tv.tv_usec = 0;  // Not using microseconds
+
+    setsockopt(*clientSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
+    int iRecv_res = recv(*clientSock, recvBuff, len, 0);
+
+    printf("recvBuff len : %d", strlen(recvBuff));
+
+    if (iRecv_res>0){
+
+        if (recvBuff == MSG_SENT) printf("Message sent");
+        else if(recvBuff == MSG_SENT) printf("Message delivered ");
+
+    }else if( iRecv_res == 0 ){
+        printf("\nConnection Closing...");
+
+    }else{
+        printf("echo fail %d", WSAGetLastError());
+        closesocket(*clientSock);
+        return 1;
+    }
 
 
 
-int main(int argc, char *argv[]){
+    tv.tv_sec = 0;  // No timeout
+    tv.tv_usec = 0;  // Not using microseconds
+    setsockopt(*clientSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
+    return 0;
+}
+
+
+int main(){
     WSADATA wsadata;
 
     if (WSAStartup(MAKEWORD(2,2), &wsadata)!=0){
@@ -28,7 +63,7 @@ int main(int argc, char *argv[]){
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
 
-    if(getaddrinfo(argv[1],DEFAULT_PORT,&hints,&result) != 0){
+    if(getaddrinfo("localhost",DEFAULT_PORT,&hints,&result) != 0){
         printf("\ngetaddrinfo failed%d");
         WSACleanup();
         return 1;
@@ -68,7 +103,7 @@ int main(int argc, char *argv[]){
 
     //sending buffer
     const char *sendbuf = "hello from the other side, -Client1 :)\0";
-    char recvbuff[BUFF_LEN];
+    char recvbuff[BUFF_LEN] = {};
 
     int sendRes = send(connectSocket,sendbuf,(int)strlen(sendbuf) + 1,0);
 
@@ -79,13 +114,15 @@ int main(int argc, char *argv[]){
 
     printf("\nNumber of bytes sent: %d",sendRes);
 
-    char recvbuf[BUFF_LEN];
+    char recvbuf[BUFF_LEN]={};
     int iResult;
 
 do {
     iResult = recv(connectSocket, recvbuf, BUFF_LEN, 0);
     if (iResult > 0) {
         printf("\nReceived echo: %s", recvbuf);
+        break;
+
     } else if (iResult == 0) {
         printf("\nConnection closed");
     } else {
@@ -93,7 +130,7 @@ do {
     }
 } while (iResult > 0);
 
-    printf("\nEcho: message sent %s", recvbuff);
+    printf("\nEcho: message sent %s", recvbuf);
 
     closesocket(connectSocket);
     WSACleanup();

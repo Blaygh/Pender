@@ -63,19 +63,18 @@ void handleClient(SOCKET* clientSock, char *recvbuf){
             //echo
             // echo(clientSock, (char *) MSG_SENT,MSG_SENT_LEN);
             echo(clientSock, recvbuf,iResult);
-            printf("echo finished?");
+            printf("\necho finished?");
         
         }else if(iResult == 0){
-            printf("Connection closing ...");
+            printf("\nConnection closing ...");
         }else{
-            printf("Recv failed %d", WSAGetLastError());
+            printf("\nRecv failed %d", WSAGetLastError());
             closesocket(*clientSock);
             delete clientSock;
             delete[] recvbuf;
         }
-
-
     }while( iResult>0);
+
     closesocket(*clientSock);
 
 }
