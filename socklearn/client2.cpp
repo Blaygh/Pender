@@ -3,9 +3,8 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdio.h>
+#include "defaults.h"
 
-#define DEFAULT_PORT "27015"
-#define BUFF_LEN 512
 
 int main(){
     //initiate WSASTARTUP
@@ -55,48 +54,77 @@ int main(){
     //BUFF initializations
     const char *sendBuff = "hello Client1 how you doing, -client 2 :)"; 
     char recvBuff[BUFF_LEN] = {};
+    int iResult;
+
+
+
+    int sendRes = send(connectSock,sendBuff,(int)strlen(sendBuff) + 1,0);
+
+    if (sendRes == SOCKET_ERROR){
+        printf("\nsend fail",WSAGetLastError());
+        closesocket(connectSock);
+    }
+
+    printf("\nNumber of bytes sent: %d",sendRes);
+
+
+do {
+    iResult = recv(connectSock, recvBuff, BUFF_LEN, 0);
+    if (iResult > 0) {
+        printf("\nReceived echo: %s", recvBuff);
+
+    } else if (iResult == 0) {
+        printf("\nConnection closed");
+    } else {
+        printf("\nrecv failed: %d", WSAGetLastError());
+    }
+} while (iResult > 0);
+
+
 
     //recieve
-    int iSendbytes = recv(connectSock, recvBuff, (int)strlen(sendBuff),0);
+    // int iSendbytes = recv(connectSock, recvBuff, (int)strlen(sendBuff),0);
 
-    if (iSendbytes == SOCKET_ERROR){
-        printf("send fail",WSAGetLastError());
-        closesocket(connectSock);
-    }
-    printf("%s", recvBuff);
+    // if (iSendbytes == SOCKET_ERROR){
+    //     printf("send fail",WSAGetLastError());
+    //     closesocket(connectSock);
+    // }
+    // printf("%s", recvBuff);
 
-    //send 
-    iSendbytes = send(connectSock, sendBuff, (int)strlen(sendBuff)+1,0);
+    // //send 
+    // iSendbytes = send(connectSock, sendBuff, (int)strlen(sendBuff)+1,0);
 
-    if (iSendbytes == SOCKET_ERROR){
-        printf("send fail %d",WSAGetLastError());
-        closesocket(connectSock);
-    }
+    // if (iSendbytes == SOCKET_ERROR){
+    //     printf("send fail %d",WSAGetLastError());
+    //     closesocket(connectSock); 
+    // }
 
-        iSendbytes = shutdown(connectSock, SD_SEND);
-    if (iSendbytes == SOCKET_ERROR) {
-        printf("shutdown failed: %d\n", WSAGetLastError());
-        closesocket(connectSock);
-        WSACleanup();
-        return 1;
-    }
+    //     iSendbytes = shutdown(connectSock, SD_SEND);
+    // if (iSendbytes == SOCKET_ERROR) {
+    //     printf("shutdown failed: %d\n", WSAGetLastError());
+    //     closesocket(connectSock);
+    //     WSACleanup();
+    //     return 1;
+    // }
 
         // Receive until the peer closes the connection
-    do {
+    // do {
 
-        iSendbytes = recv(connectSock, recvBuff, (int)BUFF_LEN, 0);
-        if ( iSendbytes > 0 )
-            printf("Bytes received: %d\n", iSendbytes);
-        else if ( iSendbytes == 0 )
-            printf("Connection closed\n");
-        else
-            printf("recv failed: %d\n", WSAGetLastError());
+    //     iSendbytes = recv(connectSock, recvBuff, (int)BUFF_LEN, 0);
+    //     if ( iSendbytes > 0 )
+    //         printf("Bytes received: %d\n", iSendbytes);
+    //     else if ( iSendbytes == 0 )
+    //         printf("Connection closed\n");
+    //     else
+    //         printf("recv failed: %d\n", WSAGetLastError());
 
-    } while( iSendbytes > 0 );
+    // } while( iSendbytes > 0 );
 
 
     //cleanup
     closesocket(connectSock);
     WSACleanup();
 
+
 }
+

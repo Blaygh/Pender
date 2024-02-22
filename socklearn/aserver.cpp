@@ -79,6 +79,7 @@ void handleClient(SOCKET* clientSock, char *recvbuf){
 
 }
 
+//next up logging
 
 
 int main(){

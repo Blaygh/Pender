@@ -17,3 +17,8 @@
 
 
 #endif
+
+//MSG_SENT_PREF
+//MSG_DELVD_PREF
+//ECHO_PREF
+//MSG_FRWD_PREF
