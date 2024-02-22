@@ -19,11 +19,10 @@ std::condition_variable cv;
 int echo( SOCKET* clientSock, const char* recvBuff, int len){
 
     if (send(*clientSock, recvBuff, len, 0) == SOCKET_ERROR){
-        printf("echo fail %d", WSAGetLastError());
+        printf("\necho fail %d", WSAGetLastError());
         closesocket(*clientSock);
     return 1;
     }
-
     printf("\necho sent");
 
     return 0;
@@ -68,7 +67,7 @@ void handleClient(SOCKET* clientSock, char *recvbuf){
         }else if(iResult == 0){
             printf("\nConnection closing ...");
         }else{
-            printf("\nRecv failed %d", WSAGetLastError());
+            printf("\nHandle client Recv failed %d", WSAGetLastError());
             closesocket(*clientSock);
             delete clientSock;
             delete[] recvbuf;
@@ -79,6 +78,7 @@ void handleClient(SOCKET* clientSock, char *recvbuf){
 
 }
 
+//next up logging
 
 
 int main(){
@@ -140,13 +140,15 @@ int main(){
     std::vector <std::map<int, SOCKET>> client_addr;
 
     while(true){
+    printf("\nServer running code %d", 100);
+
     char* recvbuff = new char[BUFF_LEN]{};
     SOCKET* clientSock = new SOCKET;
     *clientSock = accept(listenSock,NULL,NULL);
 
     if (*clientSock != INVALID_SOCKET){
 
-        printf("socket accepted");
+        printf("\nsocket accepted");
         char* sockId = new char[SOCK_ID_LEN];
 
         std::thread cltHandth(handleClient, clientSock, recvbuff);
@@ -162,12 +164,10 @@ int main(){
     }else {
     printf("Accept failed: %d", WSAGetLastError());
     }
-
-
 }
+
     closesocket(listenSock);
     WSACleanup();
-
 
     return 0;
 }

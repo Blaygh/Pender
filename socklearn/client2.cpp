@@ -3,9 +3,8 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdio.h>
+#include "defaults.h"
 
-#define DEFAULT_PORT "27015"
-#define BUFF_LEN 512
 
 int main(){
     //initiate WSASTARTUP
@@ -55,48 +54,36 @@ int main(){
     //BUFF initializations
     const char *sendBuff = "hello Client1 how you doing, -client 2 :)"; 
     char recvBuff[BUFF_LEN] = {};
+    int iResult;
 
-    //recieve
-    int iSendbytes = recv(connectSock, recvBuff, (int)strlen(sendBuff),0);
 
-    if (iSendbytes == SOCKET_ERROR){
-        printf("send fail",WSAGetLastError());
-        closesocket(connectSock);
-    }
-    printf("%s", recvBuff);
 
-    //send 
-    iSendbytes = send(connectSock, sendBuff, (int)strlen(sendBuff)+1,0);
+    int sendRes = send(connectSock,sendBuff,(int)strlen(sendBuff) + 1,0);
 
-    if (iSendbytes == SOCKET_ERROR){
-        printf("send fail %d",WSAGetLastError());
+    if (sendRes == SOCKET_ERROR){
+        printf("\nsend fail",WSAGetLastError());
         closesocket(connectSock);
     }
 
-        iSendbytes = shutdown(connectSock, SD_SEND);
-    if (iSendbytes == SOCKET_ERROR) {
-        printf("shutdown failed: %d\n", WSAGetLastError());
-        closesocket(connectSock);
-        WSACleanup();
-        return 1;
+    printf("\nNumber of bytes sent: %d",sendRes);
+
+
+do {
+    iResult = recv(connectSock, recvBuff, BUFF_LEN, 0);
+    if (iResult > 0) {
+        printf("\nReceived echo: %s", recvBuff);
+
+    } else if (iResult == 0) {
+        printf("\nConnection closed");
+    } else {
+        printf("\nrecv failed: %d", WSAGetLastError());
     }
-
-        // Receive until the peer closes the connection
-    do {
-
-        iSendbytes = recv(connectSock, recvBuff, (int)BUFF_LEN, 0);
-        if ( iSendbytes > 0 )
-            printf("Bytes received: %d\n", iSendbytes);
-        else if ( iSendbytes == 0 )
-            printf("Connection closed\n");
-        else
-            printf("recv failed: %d\n", WSAGetLastError());
-
-    } while( iSendbytes > 0 );
-
+} while (iResult > 0);
 
     //cleanup
     closesocket(connectSock);
     WSACleanup();
 
+
 }
+
