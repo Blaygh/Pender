@@ -11,14 +11,12 @@
 int recv_echo_msg( SOCKET* clientSock, char* recvBuff, int len){
 
     struct timeval tv;
-    tv.tv_sec = TIMEOUT_IN_SECONDS;  // TIMEOUT_IN_SECONDS is the timeout you want in seconds
+    tv.tv_sec = TIMEOUT_IN_SECONDS; 
     tv.tv_usec = 0;  // Not using microseconds
 
     setsockopt(*clientSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
     int iRecv_res = recv(*clientSock, recvBuff, len, 0);
-
-    printf("recvBuff len : %d", strlen(recvBuff));
 
     if (iRecv_res>0){
 
@@ -33,8 +31,6 @@ int recv_echo_msg( SOCKET* clientSock, char* recvBuff, int len){
         closesocket(*clientSock);
         return 1;
     }
-
-
 
     tv.tv_sec = 0;  // No timeout
     tv.tv_usec = 0;  // Not using microseconds
@@ -115,18 +111,27 @@ int main(){
 
     printf("\nNumber of bytes sent: %d",sendRes);
 
-do {
-    iResult = recv(connectSocket, recvbuf, BUFF_LEN, 0);
-    if (iResult > 0) {
-        printf("\nReceived echo: %s", recvbuf);
-        break;
+    //using multhithreading to to handle echo
 
-    } else if (iResult == 0) {
-        printf("\nConnection closed");
-    } else {
-        printf("\nrecv failed: %d", WSAGetLastError());
-    }
-} while (iResult > 0);
+    SOCKET *connectSock_ptr = &connectSocket;
+    std::thread echo_handle(recv_echo_msg, connectSock_ptr,recvbuf, MSG_SENT_LEN );
+    echo_handle.join();
+
+
+// do {
+//     iResult = recv(connectSocket, recvbuf, BUFF_LEN, 0);
+//     if (iResult > 0) {
+//         printf("\nReceived echo: %s", recvbuf);
+//         break;
+
+//     } else if (iResult == 0) {
+//         printf("\nConnection closed");
+//     } else {
+//         printf("\nrecv failed: %d", WSAGetLastError());
+//     }
+// } while (iResult > 0);
+
+
 
     printf("\nEcho: message sent %s", recvbuf);
 

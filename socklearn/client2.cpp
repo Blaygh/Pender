@@ -3,7 +3,40 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdio.h>
+#include <thread>
 #include "defaults.h"
+
+int recv_echo_msg( SOCKET* clientSock, char* recvBuff, int len){
+
+    struct timeval tv;
+    tv.tv_sec = TIMEOUT_IN_SECONDS; 
+    tv.tv_usec = 0;  // Not using microseconds
+
+    setsockopt(*clientSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
+    int iRecv_res = recv(*clientSock, recvBuff, len, 0);
+
+    if (iRecv_res>0){
+
+        if (recvBuff == MSG_SENT) printf("Message sent");
+        else if(recvBuff == MSG_SENT) printf("Message delivered ");
+
+    }else if( iRecv_res == 0 ){
+        printf("\nConnection Closing...");
+
+    }else{
+        printf("echo fail %d", WSAGetLastError());
+        closesocket(*clientSock);
+        return 1;
+    }
+
+    tv.tv_sec = 0;  // No timeout
+    tv.tv_usec = 0;  // Not using microseconds
+    setsockopt(*clientSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
+    return 0;
+}
+
 
 
 int main(){
@@ -67,18 +100,23 @@ int main(){
 
     printf("\nNumber of bytes sent: %d",sendRes);
 
+    SOCKET *connectSock_ptr = &connectSock;
+    std::thread echo_handle(recv_echo_msg, connectSock_ptr,recvBuff, MSG_SENT_LEN );
+    echo_handle.join();
 
-do {
-    iResult = recv(connectSock, recvBuff, BUFF_LEN, 0);
-    if (iResult > 0) {
-        printf("\nReceived echo: %s", recvBuff);
 
-    } else if (iResult == 0) {
-        printf("\nConnection closed");
-    } else {
-        printf("\nrecv failed: %d", WSAGetLastError());
-    }
-} while (iResult > 0);
+
+// do {
+//     iResult = recv(connectSock, recvBuff, BUFF_LEN, 0);
+//     if (iResult > 0) {
+//         printf("\nReceived echo: %s", recvBuff);
+
+//     } else if (iResult == 0) {
+//         printf("\nConnection closed");
+//     } else {
+//         printf("\nrecv failed: %d", WSAGetLastError());
+//     }
+// } while (iResult > 0);
 
     //cleanup
     closesocket(connectSock);
