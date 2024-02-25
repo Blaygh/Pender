@@ -16,9 +16,9 @@ std::mutex mtx;
 std::condition_variable cv;
 
 
-int echo( SOCKET* clientSock, const char* recvBuff, int len){
+int echo( SOCKET* clientSock, const char* sendBuff, int len){
 
-    if (send(*clientSock, recvBuff, len, 0) == SOCKET_ERROR){
+    if (send(*clientSock, sendBuff, len, 0) == SOCKET_ERROR){
         printf("\necho fail %d", WSAGetLastError());
         closesocket(*clientSock);
     return 1;
@@ -30,6 +30,7 @@ int echo( SOCKET* clientSock, const char* recvBuff, int len){
 
 /// @brief extract the 10 char ID from recv buff
 /// @param recvbuff the the buffer sent from client 
+/// @param senderId default is true, returns sender ID, set to false for reciever ID
 /// @return the first 10 elements from recvbuff
 char* getID(char* recvbuff, bool senderId = true){
     char *sockID = new char[SOCK_ID_LEN];
@@ -60,8 +61,8 @@ void handleClient(SOCKET* clientSock, char *recvbuf){
         if (iResult > 0){
             printf("\nhandling client");
             //echo
-            // echo(clientSock, (char *) MSG_SENT,MSG_SENT_LEN);
-            echo(clientSock, recvbuf,iResult);
+            echo(clientSock, (char *) MSG_SENT,MSG_SENT_LEN);
+            //echo(clientSock, recvbuf,iResult);
             printf("\necho finished?");
         
         }else if(iResult == 0){
@@ -171,4 +172,5 @@ int main(){
 
     return 0;
 }
+
 

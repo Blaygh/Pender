@@ -7,25 +7,32 @@
 #include "defaults.h"
 
 int recv_echo_msg( SOCKET* clientSock, char* recvBuff, int len){
+    printf("\nrecieving echo");
 
     struct timeval tv;
     tv.tv_sec = TIMEOUT_IN_SECONDS; 
     tv.tv_usec = 0;  // Not using microseconds
 
     setsockopt(*clientSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+    printf("\ntimeout set");
+
 
     int iRecv_res = recv(*clientSock, recvBuff, len, 0);
+    printf("\n iRecv_res: %d",iRecv_res);
+
+    printf("\n recvBuff: %s",recvBuff);
 
     if (iRecv_res>0){
 
-        if (recvBuff == MSG_SENT) printf("Message sent");
-        else if(recvBuff == MSG_SENT) printf("Message delivered ");
+        if (strcmp(recvBuff, MSG_SENT)) printf("\nMessage sent");
+        else if(strcmp(recvBuff, MSG_DELVD)) printf("\nMessage delivered ");
+        else printf("\nStatus code not recognized %s", recvBuff);
 
     }else if( iRecv_res == 0 ){
         printf("\nConnection Closing...");
 
     }else{
-        printf("echo fail %d", WSAGetLastError());
+        printf("\necho fail %d", WSAGetLastError());
         closesocket(*clientSock);
         return 1;
     }
