@@ -20,8 +20,9 @@ int recv_echo_msg( SOCKET* clientSock, char* recvBuff, int len){
 
     if (iRecv_res>0){
 
-        if (recvBuff == MSG_SENT) printf("Message sent");
-        else if(recvBuff == MSG_SENT) printf("Message delivered ");
+        if (strcmp(recvBuff, MSG_SENT)) printf("\nMessage sent");
+        else if(strcmp(recvBuff, MSG_DELVD)) printf("\nMessage delivered ");
+        else printf("\nStatus code not recognized %s", recvBuff);
 
     }else if( iRecv_res == 0 ){
         printf("\nConnection Closing...");
