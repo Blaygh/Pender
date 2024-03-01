@@ -92,7 +92,7 @@ int main(){
     }
 
     //BUFF initializations
-    const char *sendBuff = "hello Client1 how you doing, -client 2 :)"; 
+    const char *sendBuff = "9732895371hello Client1 how you doing, -client 2 :)"; 
     char recvBuff[BUFF_LEN] = {};
     int iResult;
 
@@ -112,18 +112,6 @@ int main(){
     echo_handle.join();
 
 
-
-// do {
-//     iResult = recv(connectSock, recvBuff, BUFF_LEN, 0);
-//     if (iResult > 0) {
-//         printf("\nReceived echo: %s", recvBuff);
-
-//     } else if (iResult == 0) {
-//         printf("\nConnection closed");
-//     } else {
-//         printf("\nrecv failed: %d", WSAGetLastError());
-//     }
-// } while (iResult > 0);
 
     //cleanup
     closesocket(connectSock);

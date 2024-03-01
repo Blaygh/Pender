@@ -99,7 +99,7 @@ int main(){
 }
 
     //sending buffer
-    const char *sendbuf = "hello from the other side, -Client1 :)\0";
+    const char *sendbuf = "9732895430\0hello from the other side, -Client1 :)\0";
     char recvbuf[BUFF_LEN]={};
     int iResult;
 
@@ -119,21 +119,6 @@ int main(){
     echo_handle.join();
 
 
-// do {
-//     iResult = recv(connectSocket, recvbuf, BUFF_LEN, 0);
-//     if (iResult > 0) {
-//         printf("\nReceived echo: %s", recvbuf);
-//         break;
-
-//     } else if (iResult == 0) {
-//         printf("\nConnection closed");
-//     } else {
-//         printf("\nrecv failed: %d", WSAGetLastError());
-//     }
-// } while (iResult > 0);
-
-
-
     printf("\nEcho: message sent %s", recvbuf);
 
     closesocket(connectSocket);
@@ -148,3 +133,6 @@ int main(){
 //send 
 //recieve
 //cleanup
+
+//client 2 9732895430
+//client 1 9732895371

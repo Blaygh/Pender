@@ -1,4 +1,4 @@
-//server
+///server
 #include "defaults.h"
 #include <winsock2.h>
 #include <ws2tcpip.h> 
@@ -9,7 +9,8 @@
 #include <thread>
 #include <map>
 #include <vector>
-            
+
+#include <iostream>
 
 
 std::mutex mtx;
@@ -33,28 +34,30 @@ int echo( SOCKET* clientSock, const char* sendBuff, int len){
 /// @param senderId default is true, returns sender ID, set to false for reciever ID
 /// @return the first 10 elements from recvbuff
 char* getID(char* recvbuff, bool senderId = true){
-    char *sockID = new char[SOCK_ID_LEN];
+    char* sockID = new char[SOCK_ID_LEN]{};
 
     if (senderId){
         for (int i=0; i< SOCK_ID_LEN; i++){
             sockID[i] = recvbuff[i];
         }
+        
         return sockID;
     }
     else{
         for (int i=0; i< SOCK_ID_LEN; i++){
             sockID[i] = recvbuff[i+SOCK_ID_LEN];
         }
-
         return sockID;
     }
+
 }
 
 /// @brief creates client socket and recieves data and echos recived message 
-void handleClient(SOCKET* clientSock, char *recvbuf){
+void handleClient(SOCKET* clientSock, char *recvbuf, std::map<int,SOCKET> &sockaddr_map){
     int iResult;
 
     std::lock_guard<std::mutex> guard(mtx);
+    char client_addr[11] = {};
 
     do{
         iResult =  recv(*clientSock,recvbuf,(int) BUFF_LEN, 0);
@@ -64,6 +67,8 @@ void handleClient(SOCKET* clientSock, char *recvbuf){
             echo(clientSock, (char *) MSG_SENT,MSG_SENT_LEN);
             //echo(clientSock, recvbuf,iResult);
             printf("\necho finished?");
+
+            break;
         
         }else if(iResult == 0){
             printf("\nConnection closing ...");
@@ -75,11 +80,29 @@ void handleClient(SOCKET* clientSock, char *recvbuf){
         }
     }while( iResult>0);
 
+    char* id = getID(recvbuf);
+    strncpy(client_addr,id, 10);
+    client_addr[10] = '\0';
+
+    printf("\nrecieved from %s", client_addr);
+
+    //delete id from get id funct
+    delete[] id; 
+
+
+    // *sockadddr_map[clieint_addr];
+
+
+
     closesocket(*clientSock);
 
 }
 
-//next up logging
+//next up sending messages
+
+int send_msg(){
+    
+}
 
 
 int main(){
@@ -138,7 +161,7 @@ int main(){
     }
 
     //for client addressing  using 10 digit"phone numbers"
-    std::vector <std::map<int, SOCKET>> client_addr;
+    std::map<int, SOCKET> client_addr_map;
 
     while(true){
     printf("\nServer running code %d", 100);
@@ -152,7 +175,7 @@ int main(){
         printf("\nsocket accepted");
         char* sockId = new char[SOCK_ID_LEN];
 
-        std::thread cltHandth(handleClient, clientSock, recvbuff);
+        std::thread cltHandth(handleClient, clientSock, recvbuff,std::ref(client_addr_map));
         cltHandth.detach();
 
         // const char *iD = getID(recvbuff);
@@ -173,4 +196,7 @@ int main(){
     return 0;
 }
 
+
+//implement addressing in sendbuff and recieve biff in both clients not done
+//retrieve 10digit addressing
 
