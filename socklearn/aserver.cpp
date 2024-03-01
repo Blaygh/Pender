@@ -100,9 +100,9 @@ void handleClient(SOCKET* clientSock, char *recvbuf, std::map<int,SOCKET> &socka
 
 //next up sending messages
 
-int send_msg(){
-    
-}
+// int send_msg(){
+
+// }
 
 
 int main(){
