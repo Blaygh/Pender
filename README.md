@@ -38,7 +38,8 @@ Once the server and client applications are running, you can use them to perform
 
 ## Multithreading
 
-The server application is planned to be implemented with multithreading to handle multiple client connections simultaneously. This will improve the performance and scalability of the application.
+The server application has been implemented with multithreading to handle multiple client connections simultaneously. This improves the performance and scalability of the application. This is still a work in progress
+
 
 ## Future Development
 
